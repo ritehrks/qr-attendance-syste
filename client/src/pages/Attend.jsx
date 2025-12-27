@@ -10,6 +10,7 @@ const Attend = () => {
 
     const sessionId = searchParams.get('session');
     const qrToken = searchParams.get('token');
+    const isStatic = searchParams.get('static') === 'true';
 
     const [step, setStep] = useState('location'); // location, form, submitting
     const [location, setLocation] = useState(null);
@@ -25,12 +26,14 @@ const Attend = () => {
     const [studentFound, setStudentFound] = useState(false);
 
     useEffect(() => {
-        if (!sessionId || !qrToken) {
+        // For static QR, we only need sessionId
+        // For dynamic QR, we need both sessionId and qrToken
+        if (!sessionId || (!isStatic && !qrToken)) {
             navigate('/scan');
             return;
         }
         requestLocation();
-    }, [sessionId, qrToken]);
+    }, [sessionId, qrToken, isStatic]);
 
     const requestLocation = () => {
         setLocationError('');
@@ -170,7 +173,7 @@ const Attend = () => {
         }
     };
 
-    if (!sessionId || !qrToken) {
+    if (!sessionId || (!isStatic && !qrToken)) {
         return null;
     }
 
