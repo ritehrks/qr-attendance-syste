@@ -14,6 +14,14 @@ import attendanceRoutes from './routes/attendance.js';
 import studentRoutes from './routes/students.js';
 import studentAuthRoutes from './routes/studentAuth.js';
 import courseRoutes from './routes/courses.js';
+import materialRoutes from './routes/materials.js';
+import assignmentRoutes from './routes/assignments.js';
+import announcementRoutes from './routes/announcements.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Connect to database
 connectDB();
@@ -24,6 +32,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Mount routes
 app.use('/api/auth', authRoutes);
 app.use('/api/sessions', sessionRoutes);
@@ -31,6 +42,10 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/student-auth', studentAuthRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/courses', materialRoutes);       // Materials nested under courses
+app.use('/api', assignmentRoutes);             // Assignments + Submissions
+app.use('/api/courses', announcementRoutes);   // Announcements nested under courses
+app.use('/api/announcements', announcementRoutes); // Direct announcement access
 
 // Health check
 app.get('/api/health', (req, res) => {

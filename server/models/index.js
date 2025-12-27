@@ -5,3 +5,7 @@ export { default as Student } from './Student.js';
 export { default as StudentUser } from './StudentUser.js';
 export { default as Course } from './Course.js';
 export { default as CourseEnrollment } from './CourseEnrollment.js';
+export { default as Material } from './Material.js';
+export { default as Announcement } from './Announcement.js';
+export { default as Assignment } from './Assignment.js';
+export { default as Submission } from './Submission.js';
