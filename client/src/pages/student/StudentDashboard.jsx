@@ -15,8 +15,14 @@ const StudentDashboard = () => {
     const [attendance, setAttendance] = useState([]);
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    // Course detail state
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [courseDetail, setCourseDetail] = useState(null);
+    const [materials, setMaterials] = useState([]);
+    const [announcements, setAnnouncements] = useState([]);
+    const [assignments, setAssignments] = useState([]);
+    const [courseTab, setCourseTab] = useState('announcements');
     const [detailLoading, setDetailLoading] = useState(false);
 
     useEffect(() => {
@@ -49,14 +55,30 @@ const StudentDashboard = () => {
 
     const fetchCourseDetail = async (courseId) => {
         setDetailLoading(true);
+        setSelectedCourse(courseId);
+        setCourseTab('announcements');
+
         try {
-            const res = await axios.get(`${API_URL}/student-auth/courses/${courseId}`, {
+            // Fetch course detail (attendance)
+            const detailRes = await axios.get(`${API_URL}/student-auth/courses/${courseId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setCourseDetail(res.data.data);
-            setSelectedCourse(courseId);
+            setCourseDetail(detailRes.data.data);
+
+            // Fetch announcements
+            const announcementsRes = await axios.get(`${API_URL}/courses/${courseId}/announcements`);
+            setAnnouncements(announcementsRes.data.data || []);
+
+            // Fetch materials
+            const materialsRes = await axios.get(`${API_URL}/courses/${courseId}/materials`);
+            setMaterials(materialsRes.data.data || []);
+
+            // Fetch assignments
+            const assignmentsRes = await axios.get(`${API_URL}/courses/${courseId}/assignments`);
+            setAssignments(assignmentsRes.data.data || []);
+
         } catch (error) {
-            console.error('Failed to fetch course detail:', error);
+            console.error('Failed to fetch course details:', error);
         } finally {
             setDetailLoading(false);
         }
@@ -67,29 +89,12 @@ const StudentDashboard = () => {
         navigate('/');
     };
 
-    const getStatusIcon = (status) => {
-        switch (status) {
-            case 'PRESENT':
-                return (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                );
-            case 'LATE':
-                return (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                );
-            default:
-                return (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                );
-        }
+    const closeCourseDetail = () => {
+        setSelectedCourse(null);
+        setCourseDetail(null);
+        setMaterials([]);
+        setAnnouncements([]);
+        setAssignments([]);
     };
 
     return (
@@ -108,25 +113,15 @@ const StudentDashboard = () => {
                         </svg>
                         Profile
                     </Link>
-                    <Link to="/scan" className="btn btn-success">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="3" y="3" width="18" height="18" rx="2" />
-                            <path d="M7 7h.01M7 12h.01M7 17h.01M12 7h.01M12 12h.01M12 17h.01M17 7h.01M17 12h.01M17 17h.01" />
-                        </svg>
-                        Scan QR
-                    </Link>
-                    <button className="btn btn-ghost" onClick={handleLogout}>
-                        Logout
-                    </button>
+                    <Link to="/scan" className="btn btn-success">Scan QR</Link>
+                    <button className="btn btn-ghost" onClick={handleLogout}>Logout</button>
                 </div>
             </header>
 
             <main className="dashboard-content">
                 {/* Profile Card */}
                 <div className="profile-card card">
-                    <div className="profile-avatar">
-                        {student?.name?.charAt(0)?.toUpperCase()}
-                    </div>
+                    <div className="profile-avatar">{student?.name?.charAt(0)?.toUpperCase()}</div>
                     <div className="profile-info">
                         <h3>{student?.name}</h3>
                         <p className="roll-badge">{student?.rollNo}</p>
@@ -166,25 +161,10 @@ const StudentDashboard = () => {
                     </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="tabs-container">
-                    <button
-                        className={`tab ${activeTab === 'courses' ? 'active' : ''}`}
-                        onClick={() => { setActiveTab('courses'); setSelectedCourse(null); }}
-                    >
-                        📚 My Courses
-                    </button>
-                    <button
-                        className={`tab ${activeTab === 'history' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('history')}
-                    >
-                        📋 All Records
-                    </button>
-                </div>
-
-                {/* Courses Tab */}
-                {activeTab === 'courses' && !selectedCourse && (
+                {/* Course List */}
+                {!selectedCourse && (
                     <div className="courses-section card">
+                        <h3>📚 My Courses</h3>
                         {loading ? (
                             <div className="loading-state">
                                 <div className="spinner"></div>
@@ -195,38 +175,24 @@ const StudentDashboard = () => {
                                 <div className="empty-icon">📚</div>
                                 <h4>No Courses Yet</h4>
                                 <p>Mark attendance in a class to be enrolled in courses</p>
-                                <Link to="/scan" className="btn btn-success">
-                                    Scan QR Code
-                                </Link>
+                                <Link to="/scan" className="btn btn-success">Scan QR Code</Link>
                             </div>
                         ) : (
                             <div className="courses-list">
                                 {courses.map(course => (
-                                    <div
-                                        key={course._id}
-                                        className="course-item"
-                                        onClick={() => fetchCourseDetail(course._id)}
-                                    >
+                                    <div key={course._id} className="course-item" onClick={() => fetchCourseDetail(course._id)}>
                                         <div className="course-info">
                                             <span className="course-code">{course.courseCode}</span>
                                             <h4>{course.courseName}</h4>
                                             {course.semester && <span className="semester">{course.semester}</span>}
                                         </div>
                                         <div className="course-stats">
-                                            <div className="attendance-percentage">
-                                                <div
-                                                    className="percentage-bar"
-                                                    style={{
-                                                        '--percentage': `${course.attendancePercentage}%`,
-                                                        background: `linear-gradient(90deg, var(--success) ${course.attendancePercentage}%, var(--bg-surface) ${course.attendancePercentage}%)`
-                                                    }}
-                                                >
-                                                    <span>{course.attendancePercentage}%</span>
-                                                </div>
+                                            <div className="attendance-percentage" style={{
+                                                background: `linear-gradient(90deg, var(--success) ${course.attendancePercentage}%, var(--bg-surface) ${course.attendancePercentage}%)`
+                                            }}>
+                                                <span>{course.attendancePercentage}%</span>
                                             </div>
-                                            <p className="attendance-count">
-                                                {course.attendanceCount} / {course.totalSessions} sessions
-                                            </p>
+                                            <p className="attendance-count">{course.attendanceCount} / {course.totalSessions} sessions</p>
                                         </div>
                                         <div className="course-arrow">→</div>
                                     </div>
@@ -237,19 +203,14 @@ const StudentDashboard = () => {
                 )}
 
                 {/* Course Detail View */}
-                {activeTab === 'courses' && selectedCourse && (
+                {selectedCourse && (
                     <div className="course-detail-section card">
-                        <button
-                            className="back-link"
-                            onClick={() => { setSelectedCourse(null); setCourseDetail(null); }}
-                        >
-                            ← Back to Courses
-                        </button>
+                        <button className="back-link" onClick={closeCourseDetail}>← Back to Courses</button>
 
                         {detailLoading ? (
                             <div className="loading-state">
                                 <div className="spinner"></div>
-                                <p>Loading course detail...</p>
+                                <p>Loading course...</p>
                             </div>
                         ) : courseDetail && (
                             <>
@@ -277,78 +238,129 @@ const StudentDashboard = () => {
                                     </div>
                                 </div>
 
-                                <h4>Session History</h4>
-                                <div className="session-list">
-                                    {courseDetail.sessions.map(session => (
-                                        <div key={session._id} className={`session-item ${session.status.toLowerCase()}`}>
-                                            <span className="session-number">#{session.sessionNumber}</span>
-                                            <span className="session-date">
-                                                {new Date(session.date).toLocaleDateString('en-IN', {
-                                                    weekday: 'short',
-                                                    day: 'numeric',
-                                                    month: 'short'
-                                                })}
-                                            </span>
-                                            <span className={`status-badge ${session.status.toLowerCase()}`}>
-                                                {session.status === 'PRESENT' && '✅'}
-                                                {session.status === 'LATE' && '⏰'}
-                                                {session.status === 'ABSENT' && '❌'}
-                                                {session.status}
-                                            </span>
-                                        </div>
-                                    ))}
+                                {/* Course Tabs */}
+                                <div className="course-tabs">
+                                    <button className={courseTab === 'announcements' ? 'active' : ''} onClick={() => setCourseTab('announcements')}>
+                                        📢 Announcements ({announcements.length})
+                                    </button>
+                                    <button className={courseTab === 'materials' ? 'active' : ''} onClick={() => setCourseTab('materials')}>
+                                        📁 Materials ({materials.length})
+                                    </button>
+                                    <button className={courseTab === 'assignments' ? 'active' : ''} onClick={() => setCourseTab('assignments')}>
+                                        📝 Assignments ({assignments.length})
+                                    </button>
+                                    <button className={courseTab === 'attendance' ? 'active' : ''} onClick={() => setCourseTab('attendance')}>
+                                        📅 Attendance
+                                    </button>
                                 </div>
-                            </>
-                        )}
-                    </div>
-                )}
 
-                {/* History Tab */}
-                {activeTab === 'history' && (
-                    <div className="attendance-section card">
-                        <h3>All Attendance Records</h3>
-
-                        {loading ? (
-                            <div className="loading-state">
-                                <div className="spinner"></div>
-                                <p>Loading records...</p>
-                            </div>
-                        ) : attendance.length === 0 ? (
-                            <div className="empty-state">
-                                <div className="empty-icon">📋</div>
-                                <h4>No Attendance Records</h4>
-                                <p>Scan a QR code to mark your first attendance</p>
-                                <Link to="/scan" className="btn btn-success">
-                                    Scan QR Code
-                                </Link>
-                            </div>
-                        ) : (
-                            <div className="attendance-list">
-                                {attendance.map(record => (
-                                    <div key={record._id} className="attendance-item">
-                                        <div className={`status-indicator ${record.status.toLowerCase()}`}>
-                                            {getStatusIcon(record.status)}
-                                        </div>
-                                        <div className="attendance-info">
-                                            <h4>{record.session?.courseName || 'Unknown Session'}</h4>
-                                            <p>{new Date(record.createdAt).toLocaleDateString('en-IN', {
-                                                weekday: 'short',
-                                                year: 'numeric',
-                                                month: 'short',
-                                                day: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}</p>
-                                        </div>
-                                        <div className="attendance-meta">
-                                            <span className={`badge badge-${record.status.toLowerCase()}`}>
-                                                {record.status}
-                                            </span>
-                                            <span className="distance">{record.distance}m</span>
-                                        </div>
+                                {/* Announcements Tab */}
+                                {courseTab === 'announcements' && (
+                                    <div className="announcements-list">
+                                        {announcements.length === 0 ? (
+                                            <div className="empty-state-small">No announcements yet.</div>
+                                        ) : (
+                                            announcements.map(announcement => (
+                                                <div key={announcement._id} className={`announcement-card ${announcement.isPinned ? 'pinned' : ''}`}>
+                                                    {announcement.isPinned && <span className="pin-badge">📌 Pinned</span>}
+                                                    <p>{announcement.content}</p>
+                                                    <span className="announcement-date">
+                                                        {new Date(announcement.createdAt).toLocaleDateString('en-IN', {
+                                                            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                                                        })}
+                                                    </span>
+                                                </div>
+                                            ))
+                                        )}
                                     </div>
-                                ))}
-                            </div>
+                                )}
+
+                                {/* Materials Tab */}
+                                {courseTab === 'materials' && (
+                                    <div className="materials-list">
+                                        {materials.length === 0 ? (
+                                            <div className="empty-state-small">No materials shared yet.</div>
+                                        ) : (
+                                            materials.map(material => (
+                                                <div key={material._id} className="material-card">
+                                                    <div className="material-icon">{material.type === 'LINK' ? '🔗' : '📄'}</div>
+                                                    <div className="material-info">
+                                                        <h4>{material.title}</h4>
+                                                        {material.description && <p>{material.description}</p>}
+                                                        <span className="material-meta">
+                                                            {material.type === 'FILE' && `${Math.round(material.fileSize / 1024)}KB • `}
+                                                            {new Date(material.createdAt).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+                                                    {material.type === 'LINK' ? (
+                                                        <a href={material.url} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-secondary">
+                                                            Open ↗
+                                                        </a>
+                                                    ) : (
+                                                        <a href={`${API_URL}/courses/${selectedCourse}/materials/${material._id}/download`} className="btn btn-sm btn-secondary">
+                                                            Download
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Assignments Tab */}
+                                {courseTab === 'assignments' && (
+                                    <div className="assignments-list">
+                                        {assignments.length === 0 ? (
+                                            <div className="empty-state-small">No assignments yet.</div>
+                                        ) : (
+                                            assignments.map(assignment => {
+                                                const dueDate = new Date(assignment.dueDate);
+                                                const isOverdue = dueDate < new Date();
+                                                return (
+                                                    <div key={assignment._id} className={`assignment-card ${isOverdue ? 'overdue' : ''}`}>
+                                                        <div className="assignment-icon">📝</div>
+                                                        <div className="assignment-info">
+                                                            <h4>{assignment.title}</h4>
+                                                            {assignment.description && <p>{assignment.description}</p>}
+                                                            <span className={`due-date ${isOverdue ? 'overdue' : ''}`}>
+                                                                {isOverdue ? '⚠️ ' : '📅 '}
+                                                                Due: {dueDate.toLocaleDateString('en-IN', {
+                                                                    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                                                                })}
+                                                            </span>
+                                                        </div>
+                                                        {assignment.points > 0 && (
+                                                            <span className="points-badge">{assignment.points} pts</span>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Attendance Tab */}
+                                {courseTab === 'attendance' && (
+                                    <div className="session-list">
+                                        {courseDetail.sessions.map(session => (
+                                            <div key={session._id} className={`session-item ${session.status.toLowerCase()}`}>
+                                                <span className="session-number">#{session.sessionNumber}</span>
+                                                <span className="session-date">
+                                                    {new Date(session.date).toLocaleDateString('en-IN', {
+                                                        weekday: 'short', day: 'numeric', month: 'short'
+                                                    })}
+                                                </span>
+                                                <span className={`status-badge ${session.status.toLowerCase()}`}>
+                                                    {session.status === 'PRESENT' && '✅'}
+                                                    {session.status === 'LATE' && '⏰'}
+                                                    {session.status === 'ABSENT' && '❌'}
+                                                    {session.status}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 )}

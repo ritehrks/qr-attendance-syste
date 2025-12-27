@@ -544,3 +544,203 @@
 .btn-success:hover {
     background: #059669;
 }
+
+/* Course Tabs */
+.course-tabs {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    overflow-x: auto;
+    padding-bottom: var(--space-2);
+}
+
+.course-tabs button {
+    padding: var(--space-2) var(--space-4);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.course-tabs button:hover {
+    background: var(--bg-elevated);
+}
+
+.course-tabs button.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+/* Empty State Small */
+.empty-state-small {
+    text-align: center;
+    padding: var(--space-6);
+    color: var(--text-muted);
+}
+
+/* Announcement Cards */
+.announcements-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.announcement-card {
+    padding: var(--space-4);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+}
+
+.announcement-card.pinned {
+    border-color: var(--warning);
+    background: rgba(251, 191, 36, 0.05);
+}
+
+.pin-badge {
+    font-size: var(--text-xs);
+    color: var(--warning);
+    margin-bottom: var(--space-2);
+    display: block;
+}
+
+.announcement-card p {
+    margin: 0 0 var(--space-2);
+    white-space: pre-wrap;
+    line-height: 1.5;
+}
+
+.announcement-date {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+}
+
+/* Material Cards */
+.materials-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.material-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+}
+
+.material-icon {
+    font-size: 1.5rem;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+}
+
+.material-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.material-info h4 {
+    margin: 0 0 var(--space-1);
+    font-size: var(--text-base);
+}
+
+.material-info p {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+
+.material-meta {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-top: var(--space-1);
+}
+
+/* Assignment Cards */
+.assignments-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.assignment-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+}
+
+.assignment-card.overdue {
+    border-color: var(--error);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.assignment-icon {
+    font-size: 1.5rem;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+}
+
+.assignment-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.assignment-info h4 {
+    margin: 0 0 var(--space-1);
+    font-size: var(--text-base);
+}
+
+.assignment-info p {
+    margin: 0 0 var(--space-1);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+
+.due-date {
+    font-size: var(--text-xs);
+    color: var(--warning);
+}
+
+.due-date.overdue {
+    color: var(--error);
+}
+
+.points-badge {
+    background: var(--primary-muted);
+    color: var(--primary);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-md);
+    font-size: var(--text-xs);
+    font-weight: 600;
+}
+
+/* Button Small */
+.btn-sm {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+}
