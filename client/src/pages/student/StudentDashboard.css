@@ -1,0 +1,286 @@
+.student-dashboard {
+    min-height: 100vh;
+    background: var(--bg-base);
+}
+
+.student-dashboard .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-5) var(--space-8);
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.student-dashboard .header-left h1 {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-1);
+}
+
+.student-dashboard .header-left p {
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+}
+
+.student-dashboard .header-right {
+    display: flex;
+    gap: var(--space-3);
+}
+
+.student-dashboard .dashboard-content {
+    padding: var(--space-8);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Profile Card */
+.profile-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    margin-bottom: var(--space-6);
+    background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-surface) 100%);
+}
+
+.profile-avatar {
+    width: 72px;
+    height: 72px;
+    background: var(--gradient-success);
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+}
+
+.profile-info h3 {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-2);
+}
+
+.roll-badge {
+    display: inline-block;
+    padding: var(--space-1) var(--space-3);
+    background: var(--success-muted);
+    color: var(--success);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    margin-bottom: var(--space-1);
+}
+
+.profile-info .email {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+
+/* Stats Grid */
+.student-dashboard .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.student-dashboard .stat-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+}
+
+.student-dashboard .stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.student-dashboard .stat-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.student-dashboard .stat-icon.total {
+    background: var(--primary-muted);
+    color: var(--primary);
+}
+
+.student-dashboard .stat-card.present .stat-icon {
+    background: var(--success-muted);
+    color: var(--success);
+}
+
+.student-dashboard .stat-card.late .stat-icon {
+    background: var(--warning-muted);
+    color: var(--warning);
+}
+
+.student-dashboard .stat-card.invalid .stat-icon {
+    background: var(--error-muted);
+    color: var(--error);
+}
+
+.student-dashboard .stat-info h3 {
+    font-size: var(--text-2xl);
+    margin-bottom: 0;
+}
+
+.student-dashboard .stat-info p {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+
+/* Attendance Section */
+.attendance-section h3 {
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-5);
+}
+
+.attendance-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.attendance-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    transition: all var(--duration-fast) var(--ease-out);
+}
+
+.attendance-item:hover {
+    border-color: var(--border-default);
+}
+
+.status-indicator {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.status-indicator svg {
+    width: 20px;
+    height: 20px;
+}
+
+.status-indicator.present {
+    background: var(--success-muted);
+    color: var(--success);
+}
+
+.status-indicator.late {
+    background: var(--warning-muted);
+    color: var(--warning);
+}
+
+.status-indicator.invalid {
+    background: var(--error-muted);
+    color: var(--error);
+}
+
+.attendance-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.attendance-info h4 {
+    font-size: var(--text-base);
+    margin-bottom: var(--space-1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.attendance-info p {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+
+.attendance-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-1);
+}
+
+.attendance-meta .distance {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+}
+
+/* Empty State */
+.attendance-section .empty-state {
+    padding: var(--space-10);
+}
+
+.attendance-section .empty-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto var(--space-5);
+    background: var(--bg-surface);
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.attendance-section .empty-icon svg {
+    width: 28px;
+    height: 28px;
+    color: var(--text-muted);
+}
+
+.attendance-section .empty-state h4 {
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-2);
+}
+
+@media (max-width: 768px) {
+    .student-dashboard .dashboard-header {
+        flex-direction: column;
+        gap: var(--space-4);
+        padding: var(--space-4);
+    }
+
+    .student-dashboard .header-right {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .student-dashboard .header-right .btn {
+        flex: 1;
+        min-width: 100px;
+    }
+
+    .student-dashboard .dashboard-content {
+        padding: var(--space-4);
+    }
+
+    .student-dashboard .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .profile-card {
+        flex-direction: column;
+        text-align: center;
+    }
+}
