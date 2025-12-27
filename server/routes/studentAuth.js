@@ -1,7 +1,7 @@
 import express from 'express';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { StudentUser, Attendance } from '../models/index.js';
+import { StudentUser, Attendance, Course, CourseEnrollment, Session } from '../models/index.js';
 import config from '../config/index.js';
 import { sendPasswordResetEmail } from '../utils/email.js';
 
@@ -332,9 +332,9 @@ router.put('/reset-password/:token', async (req, res) => {
 router.get('/attendance', protectStudent, async (req, res) => {
     try {
         const attendance = await Attendance.find({
-            studentId: req.student.rollNo
+            studentId: { $regex: new RegExp(`^${req.student.rollNo}$`, 'i') }
         })
-            .populate('session', 'courseName description startTime')
+            .populate('session', 'courseName description startTime course sessionNumber')
             .sort({ createdAt: -1 });
 
         // Calculate stats
@@ -349,6 +349,124 @@ router.get('/attendance', protectStudent, async (req, res) => {
             success: true,
             stats,
             data: attendance
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// @route   GET /api/student-auth/courses
+// @desc    Get courses where student is enrolled
+// @access  Private
+router.get('/courses', protectStudent, async (req, res) => {
+    try {
+        // Find all enrollments for this student (case-insensitive)
+        const enrollments = await CourseEnrollment.find({
+            studentId: { $regex: new RegExp(`^${req.student.rollNo}$`, 'i') },
+            isActive: true
+        }).populate('course');
+
+        // Get course details with attendance stats
+        const coursesWithStats = await Promise.all(enrollments.map(async (enrollment) => {
+            const course = enrollment.course;
+            if (!course) return null;
+
+            // Count attendance for this course
+            const sessions = await Session.find({ course: course._id }).distinct('_id');
+            const attendanceCount = await Attendance.countDocuments({
+                session: { $in: sessions },
+                studentId: { $regex: new RegExp(`^${req.student.rollNo}$`, 'i') }
+            });
+
+            return {
+                _id: course._id,
+                courseCode: course.courseCode,
+                courseName: course.courseName,
+                semester: course.semester,
+                totalSessions: course.totalSessions,
+                attendanceCount,
+                attendancePercentage: course.totalSessions > 0
+                    ? Math.round((attendanceCount / course.totalSessions) * 100)
+                    : 0,
+                enrolledAt: enrollment.enrolledAt
+            };
+        }));
+
+        res.json({
+            success: true,
+            data: coursesWithStats.filter(c => c !== null)
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// @route   GET /api/student-auth/courses/:id
+// @desc    Get student's attendance for a specific course
+// @access  Private
+router.get('/courses/:id', protectStudent, async (req, res) => {
+    try {
+        const course = await Course.findById(req.params.id);
+        if (!course) {
+            return res.status(404).json({
+                success: false,
+                error: 'Course not found'
+            });
+        }
+
+        // Get all sessions for this course
+        const sessions = await Session.find({ course: course._id })
+            .sort({ sessionNumber: -1 });
+
+        // Get attendance for each session
+        const sessionsWithAttendance = await Promise.all(sessions.map(async (session) => {
+            const attendance = await Attendance.findOne({
+                session: session._id,
+                studentId: { $regex: new RegExp(`^${req.student.rollNo}$`, 'i') }
+            });
+
+            return {
+                _id: session._id,
+                sessionNumber: session.sessionNumber,
+                date: session.startTime,
+                status: attendance ? attendance.status : 'ABSENT',
+                distance: attendance ? attendance.distance : null,
+                markedAt: attendance ? attendance.createdAt : null
+            };
+        }));
+
+        // Calculate overall stats
+        const attendanceCount = sessionsWithAttendance.filter(s => s.status !== 'ABSENT').length;
+        const presentCount = sessionsWithAttendance.filter(s => s.status === 'PRESENT').length;
+        const lateCount = sessionsWithAttendance.filter(s => s.status === 'LATE').length;
+
+        res.json({
+            success: true,
+            data: {
+                course: {
+                    _id: course._id,
+                    courseCode: course.courseCode,
+                    courseName: course.courseName,
+                    semester: course.semester,
+                    totalSessions: course.totalSessions
+                },
+                stats: {
+                    attended: attendanceCount,
+                    present: presentCount,
+                    late: lateCount,
+                    absent: sessions.length - attendanceCount,
+                    percentage: course.totalSessions > 0
+                        ? Math.round((attendanceCount / course.totalSessions) * 100)
+                        : 0
+                },
+                sessions: sessionsWithAttendance
+            }
         });
     } catch (error) {
         res.status(500).json({

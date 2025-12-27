@@ -2,19 +2,38 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStudentAuth } from '../../context/StudentAuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
+import axios from 'axios';
+import API_URL from '../../config/api';
 import './StudentDashboard.css';
 
 const StudentDashboard = () => {
-    const { student, logout, getAttendance } = useStudentAuth();
+    const { student, token, logout, getAttendance } = useStudentAuth();
     const navigate = useNavigate();
 
+    const [activeTab, setActiveTab] = useState('courses');
+    const [courses, setCourses] = useState([]);
     const [attendance, setAttendance] = useState([]);
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [selectedCourse, setSelectedCourse] = useState(null);
+    const [courseDetail, setCourseDetail] = useState(null);
+    const [detailLoading, setDetailLoading] = useState(false);
 
     useEffect(() => {
+        fetchCourses();
         fetchAttendance();
     }, []);
+
+    const fetchCourses = async () => {
+        try {
+            const res = await axios.get(`${API_URL}/student-auth/courses`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setCourses(res.data.data || []);
+        } catch (error) {
+            console.error('Failed to fetch courses:', error);
+        }
+    };
 
     const fetchAttendance = async () => {
         try {
@@ -25,6 +44,21 @@ const StudentDashboard = () => {
             console.error('Failed to fetch attendance:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchCourseDetail = async (courseId) => {
+        setDetailLoading(true);
+        try {
+            const res = await axios.get(`${API_URL}/student-auth/courses/${courseId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setCourseDetail(res.data.data);
+            setSelectedCourse(courseId);
+        } catch (error) {
+            console.error('Failed to fetch course detail:', error);
+        } finally {
+            setDetailLoading(false);
         }
     };
 
@@ -103,50 +137,28 @@ const StudentDashboard = () => {
                 {/* Stats */}
                 <div className="stats-grid">
                     <div className="stat-card">
-                        <div className="stat-icon total">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                <line x1="16" y1="2" x2="16" y2="6" />
-                                <line x1="8" y1="2" x2="8" y2="6" />
-                                <line x1="3" y1="10" x2="21" y2="10" />
-                            </svg>
-                        </div>
+                        <div className="stat-icon total">📚</div>
                         <div className="stat-info">
-                            <h3>{stats?.total || 0}</h3>
-                            <p>Total Records</p>
+                            <h3>{courses.length}</h3>
+                            <p>Courses</p>
                         </div>
                     </div>
                     <div className="stat-card present">
-                        <div className="stat-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                        </div>
+                        <div className="stat-icon">✅</div>
                         <div className="stat-info">
                             <h3>{stats?.present || 0}</h3>
                             <p>Present</p>
                         </div>
                     </div>
                     <div className="stat-card late">
-                        <div className="stat-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <circle cx="12" cy="12" r="10" />
-                                <polyline points="12 6 12 12 16 14" />
-                            </svg>
-                        </div>
+                        <div className="stat-icon">⏰</div>
                         <div className="stat-info">
                             <h3>{stats?.late || 0}</h3>
                             <p>Late</p>
                         </div>
                     </div>
                     <div className="stat-card invalid">
-                        <div className="stat-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <circle cx="12" cy="12" r="10" />
-                                <line x1="15" y1="9" x2="9" y2="15" />
-                                <line x1="9" y1="9" x2="15" y2="15" />
-                            </svg>
-                        </div>
+                        <div className="stat-icon">❌</div>
                         <div className="stat-info">
                             <h3>{stats?.invalid || 0}</h3>
                             <p>Invalid</p>
@@ -154,60 +166,192 @@ const StudentDashboard = () => {
                     </div>
                 </div>
 
-                {/* Attendance History */}
-                <div className="attendance-section card">
-                    <h3>Attendance History</h3>
+                {/* Tabs */}
+                <div className="tabs-container">
+                    <button
+                        className={`tab ${activeTab === 'courses' ? 'active' : ''}`}
+                        onClick={() => { setActiveTab('courses'); setSelectedCourse(null); }}
+                    >
+                        📚 My Courses
+                    </button>
+                    <button
+                        className={`tab ${activeTab === 'history' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('history')}
+                    >
+                        📋 All Records
+                    </button>
+                </div>
 
-                    {loading ? (
-                        <div className="loading-state">
-                            <div className="spinner"></div>
-                            <p>Loading records...</p>
-                        </div>
-                    ) : attendance.length === 0 ? (
-                        <div className="empty-state">
-                            <div className="empty-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                    <line x1="16" y1="2" x2="16" y2="6" />
-                                    <line x1="8" y1="2" x2="8" y2="6" />
-                                    <line x1="3" y1="10" x2="21" y2="10" />
-                                </svg>
+                {/* Courses Tab */}
+                {activeTab === 'courses' && !selectedCourse && (
+                    <div className="courses-section card">
+                        {loading ? (
+                            <div className="loading-state">
+                                <div className="spinner"></div>
+                                <p>Loading courses...</p>
                             </div>
-                            <h4>No Attendance Records</h4>
-                            <p>Scan a QR code to mark your first attendance</p>
-                            <Link to="/scan" className="btn btn-success">
-                                Scan QR Code
-                            </Link>
-                        </div>
-                    ) : (
-                        <div className="attendance-list">
-                            {attendance.map(record => (
-                                <div key={record._id} className="attendance-item">
-                                    <div className={`status-indicator ${record.status.toLowerCase()}`}>
-                                        {getStatusIcon(record.status)}
+                        ) : courses.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-icon">📚</div>
+                                <h4>No Courses Yet</h4>
+                                <p>Mark attendance in a class to be enrolled in courses</p>
+                                <Link to="/scan" className="btn btn-success">
+                                    Scan QR Code
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className="courses-list">
+                                {courses.map(course => (
+                                    <div
+                                        key={course._id}
+                                        className="course-item"
+                                        onClick={() => fetchCourseDetail(course._id)}
+                                    >
+                                        <div className="course-info">
+                                            <span className="course-code">{course.courseCode}</span>
+                                            <h4>{course.courseName}</h4>
+                                            {course.semester && <span className="semester">{course.semester}</span>}
+                                        </div>
+                                        <div className="course-stats">
+                                            <div className="attendance-percentage">
+                                                <div
+                                                    className="percentage-bar"
+                                                    style={{
+                                                        '--percentage': `${course.attendancePercentage}%`,
+                                                        background: `linear-gradient(90deg, var(--success) ${course.attendancePercentage}%, var(--bg-surface) ${course.attendancePercentage}%)`
+                                                    }}
+                                                >
+                                                    <span>{course.attendancePercentage}%</span>
+                                                </div>
+                                            </div>
+                                            <p className="attendance-count">
+                                                {course.attendanceCount} / {course.totalSessions} sessions
+                                            </p>
+                                        </div>
+                                        <div className="course-arrow">→</div>
                                     </div>
-                                    <div className="attendance-info">
-                                        <h4>{record.session?.courseName || 'Unknown Session'}</h4>
-                                        <p>{new Date(record.createdAt).toLocaleDateString('en-IN', {
-                                            weekday: 'short',
-                                            year: 'numeric',
-                                            month: 'short',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}</p>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Course Detail View */}
+                {activeTab === 'courses' && selectedCourse && (
+                    <div className="course-detail-section card">
+                        <button
+                            className="back-link"
+                            onClick={() => { setSelectedCourse(null); setCourseDetail(null); }}
+                        >
+                            ← Back to Courses
+                        </button>
+
+                        {detailLoading ? (
+                            <div className="loading-state">
+                                <div className="spinner"></div>
+                                <p>Loading course detail...</p>
+                            </div>
+                        ) : courseDetail && (
+                            <>
+                                <div className="course-header">
+                                    <span className="course-code">{courseDetail.course.courseCode}</span>
+                                    <h3>{courseDetail.course.courseName}</h3>
+                                </div>
+
+                                <div className="course-stats-bar">
+                                    <div className="stat">
+                                        <span className="value">{courseDetail.stats.percentage}%</span>
+                                        <span className="label">Attendance</span>
                                     </div>
-                                    <div className="attendance-meta">
-                                        <span className={`badge badge-${record.status.toLowerCase()}`}>
-                                            {record.status}
-                                        </span>
-                                        <span className="distance">{record.distance}m</span>
+                                    <div className="stat">
+                                        <span className="value">{courseDetail.stats.present}</span>
+                                        <span className="label">Present</span>
+                                    </div>
+                                    <div className="stat">
+                                        <span className="value">{courseDetail.stats.late}</span>
+                                        <span className="label">Late</span>
+                                    </div>
+                                    <div className="stat">
+                                        <span className="value">{courseDetail.stats.absent}</span>
+                                        <span className="label">Absent</span>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+
+                                <h4>Session History</h4>
+                                <div className="session-list">
+                                    {courseDetail.sessions.map(session => (
+                                        <div key={session._id} className={`session-item ${session.status.toLowerCase()}`}>
+                                            <span className="session-number">#{session.sessionNumber}</span>
+                                            <span className="session-date">
+                                                {new Date(session.date).toLocaleDateString('en-IN', {
+                                                    weekday: 'short',
+                                                    day: 'numeric',
+                                                    month: 'short'
+                                                })}
+                                            </span>
+                                            <span className={`status-badge ${session.status.toLowerCase()}`}>
+                                                {session.status === 'PRESENT' && '✅'}
+                                                {session.status === 'LATE' && '⏰'}
+                                                {session.status === 'ABSENT' && '❌'}
+                                                {session.status}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                )}
+
+                {/* History Tab */}
+                {activeTab === 'history' && (
+                    <div className="attendance-section card">
+                        <h3>All Attendance Records</h3>
+
+                        {loading ? (
+                            <div className="loading-state">
+                                <div className="spinner"></div>
+                                <p>Loading records...</p>
+                            </div>
+                        ) : attendance.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-icon">📋</div>
+                                <h4>No Attendance Records</h4>
+                                <p>Scan a QR code to mark your first attendance</p>
+                                <Link to="/scan" className="btn btn-success">
+                                    Scan QR Code
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className="attendance-list">
+                                {attendance.map(record => (
+                                    <div key={record._id} className="attendance-item">
+                                        <div className={`status-indicator ${record.status.toLowerCase()}`}>
+                                            {getStatusIcon(record.status)}
+                                        </div>
+                                        <div className="attendance-info">
+                                            <h4>{record.session?.courseName || 'Unknown Session'}</h4>
+                                            <p>{new Date(record.createdAt).toLocaleDateString('en-IN', {
+                                                weekday: 'short',
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}</p>
+                                        </div>
+                                        <div className="attendance-meta">
+                                            <span className={`badge badge-${record.status.toLowerCase()}`}>
+                                                {record.status}
+                                            </span>
+                                            <span className="distance">{record.distance}m</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </main>
         </div>
     );
