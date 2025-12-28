@@ -32,8 +32,14 @@ export const AuthProvider = ({ children }) => {
             });
             setAdmin(res.data.admin);
         } catch (error) {
-            console.error('Auth error:', error);
-            logout();
+            // Only logout on 401 Unauthorized (invalid/expired token)
+            // Keep user logged in for network errors or other temporary failures
+            if (error.response?.status === 401) {
+                console.error('Auth error:', error);
+                logout();
+            } else {
+                console.error('Network error:', error);
+            }
         } finally {
             setLoading(false);
         }

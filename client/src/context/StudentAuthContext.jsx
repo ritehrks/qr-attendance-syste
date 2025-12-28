@@ -24,9 +24,16 @@ export const StudentAuthProvider = ({ children }) => {
             });
             setStudent(res.data.data);
         } catch (error) {
-            localStorage.removeItem('studentToken');
-            setToken(null);
-            setStudent(null);
+            // Only logout on 401 Unauthorized (invalid/expired token)
+            // Keep user logged in for network errors or other temporary failures
+            if (error.response?.status === 401) {
+                localStorage.removeItem('studentToken');
+                setToken(null);
+                setStudent(null);
+            } else {
+                console.error('Failed to fetch student:', error);
+                // Try to restore from localStorage on next mount
+            }
         } finally {
             setLoading(false);
         }
