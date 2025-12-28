@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import './Home.css';
 
 const Home = () => {
+    const [showInstructions, setShowInstructions] = useState(false);
+
     return (
         <div className="home-page">
             <div className="home-content animate-fade-in-up">
@@ -46,6 +49,97 @@ const Home = () => {
                 <div className="admin-link">
                     <Link to="/admin/login">Admin Portal →</Link>
                 </div>
+
+                {/* How It Works Section */}
+                <button
+                    className="how-it-works-toggle"
+                    onClick={() => setShowInstructions(!showInstructions)}
+                >
+                    {showInstructions ? '✕ Hide Instructions' : '❓ New here? See how it works'}
+                </button>
+
+                {showInstructions && (
+                    <div className="instructions-section animate-fade-in">
+                        <h3>📖 How It Works</h3>
+
+                        <div className="instruction-group">
+                            <h4>👨‍🎓 For Students</h4>
+                            <div className="steps">
+                                <div className="step">
+                                    <span className="step-number">1</span>
+                                    <div className="step-content">
+                                        <strong>Register/Login</strong>
+                                        <p>Click "My Dashboard" → Create account or login</p>
+                                    </div>
+                                </div>
+                                <div className="step">
+                                    <span className="step-number">2</span>
+                                    <div className="step-content">
+                                        <strong>Scan QR Code</strong>
+                                        <p>When professor shows QR, tap "Scan QR" and point camera at it</p>
+                                    </div>
+                                </div>
+                                <div className="step">
+                                    <span className="step-number">3</span>
+                                    <div className="step-content">
+                                        <strong>Enter Details</strong>
+                                        <p>Enter your Roll Number & Name → Submit</p>
+                                    </div>
+                                </div>
+                                <div className="step">
+                                    <span className="step-number">4</span>
+                                    <div className="step-content">
+                                        <strong>Done!</strong>
+                                        <p>Your attendance is marked. View history in dashboard.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="instruction-group">
+                            <h4>👨‍🏫 For Professors</h4>
+                            <div className="steps">
+                                <div className="step">
+                                    <span className="step-number">1</span>
+                                    <div className="step-content">
+                                        <strong>Login to Admin</strong>
+                                        <p>Click "Admin Portal" → Register/Login</p>
+                                    </div>
+                                </div>
+                                <div className="step">
+                                    <span className="step-number">2</span>
+                                    <div className="step-content">
+                                        <strong>Create a Course</strong>
+                                        <p>Go to Courses → Add New Course</p>
+                                    </div>
+                                </div>
+                                <div className="step">
+                                    <span className="step-number">3</span>
+                                    <div className="step-content">
+                                        <strong>Start a Session</strong>
+                                        <p>Open course → Click "Start Session" → QR appears!</p>
+                                    </div>
+                                </div>
+                                <div className="step">
+                                    <span className="step-number">4</span>
+                                    <div className="step-content">
+                                        <strong>Show QR to Class</strong>
+                                        <p>Students scan it. Watch attendance appear in real-time!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pro-tips">
+                            <h4>💡 Pro Tips</h4>
+                            <ul>
+                                <li>📍 Students must be within 50m of the classroom</li>
+                                <li>📱 Install as app: Menu → "Add to Home Screen"</li>
+                                <li>🔄 QR codes refresh automatically for security</li>
+                            </ul>
+                        </div>
+                    </div>
+                )}
 
                 <div className="home-features">
                     <div className="feature">
