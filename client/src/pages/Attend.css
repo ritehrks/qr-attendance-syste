@@ -169,3 +169,25 @@
     font-size: var(--text-xs);
     font-weight: 500;
 }
+
+/* Logged-in Badge */
+.logged-in-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-5);
+    font-size: var(--text-sm);
+    color: var(--success);
+}
+
+.logged-in-badge svg {
+    color: var(--success);
+}
+
+.logged-in-badge strong {
+    color: var(--text-primary);
+}

@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config/api';
+import { useStudentAuth } from '../context/StudentAuthContext';
 import './Attend.css';
 
 const Attend = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const { student, token } = useStudentAuth();
 
     const sessionId = searchParams.get('session');
     const qrToken = searchParams.get('token');
@@ -18,8 +20,10 @@ const Attend = () => {
     const [distance, setDistance] = useState(null);
     const [withinRange, setWithinRange] = useState(false);
 
+    // Pre-fill with logged-in student data if available
     const [studentName, setStudentName] = useState('');
     const [studentId, setStudentId] = useState('');
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [lookupLoading, setLookupLoading] = useState(false);
@@ -34,6 +38,16 @@ const Attend = () => {
         }
         requestLocation();
     }, [sessionId, qrToken, isStatic]);
+
+    // Auto-fill student data if logged in
+    useEffect(() => {
+        if (student && token) {
+            setStudentId(student.rollNo || '');
+            setStudentName(student.name || '');
+            setIsLoggedIn(true);
+            setStudentFound(true);
+        }
+    }, [student, token]);
 
     const requestLocation = () => {
         setLocationError('');
@@ -269,6 +283,15 @@ const Attend = () => {
                         </div>
 
                         <form onSubmit={handleSubmit} className="attend-form">
+                            {isLoggedIn && (
+                                <div className="logged-in-badge">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M20 6L9 17l-5-5" />
+                                    </svg>
+                                    Logged in as <strong>{student?.name}</strong>
+                                </div>
+                            )}
+
                             <div className="form-group">
                                 <label className="form-label">
                                     Student ID / Roll Number
@@ -282,7 +305,7 @@ const Attend = () => {
                                     value={studentId}
                                     onChange={(e) => handleRollNoChange(e.target.value)}
                                     required
-                                    disabled={loading}
+                                    disabled={loading || isLoggedIn}
                                 />
                             </div>
 
@@ -298,7 +321,7 @@ const Attend = () => {
                                     value={studentName}
                                     onChange={(e) => setStudentName(e.target.value)}
                                     required
-                                    disabled={loading || studentFound}
+                                    disabled={loading || studentFound || isLoggedIn}
                                 />
                             </div>
 
