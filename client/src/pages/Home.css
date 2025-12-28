@@ -60,9 +60,9 @@
 /* Cards Grid */
 .home-cards {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: var(--space-4);
-    margin-bottom: var(--space-10);
+    margin-bottom: var(--space-8);
 }
 
 .home-card {
@@ -166,19 +166,18 @@
     box-shadow: var(--shadow-xl), 0 0 40px rgba(59, 130, 246, 0.2);
 }
 
-/* Admin Link */
-.admin-link {
-    margin-bottom: var(--space-8);
+/* Educators Portal Card */
+.educator-card .card-icon-wrapper {
+    background: rgba(139, 92, 246, 0.15);
 }
 
-.admin-link a {
-    font-size: var(--text-sm);
-    color: var(--text-muted);
-    transition: color var(--duration-fast) var(--ease-out);
+.educator-card svg {
+    color: #8b5cf6;
 }
 
-.admin-link a:hover {
-    color: var(--primary);
+.educator-card:hover {
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: var(--shadow-xl), 0 0 40px rgba(139, 92, 246, 0.2);
 }
 
 /* Features */
@@ -334,7 +333,7 @@
     padding: var(--space-1) 0;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .home-cards {
         grid-template-columns: 1fr;
     }

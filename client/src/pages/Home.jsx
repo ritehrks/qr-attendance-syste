@@ -41,13 +41,22 @@ const Home = () => {
                                 <circle cx="12" cy="7" r="4" />
                             </svg>
                         </div>
-                        <h3>My Dashboard</h3>
+                        <h3>Student Dashboard</h3>
                         <p>View attendance history</p>
                     </Link>
-                </div>
 
-                <div className="admin-link">
-                    <Link to="/admin/login">Admin Portal →</Link>
+                    <Link to="/admin/login" className="home-card educator-card">
+                        <div className="card-icon-wrapper">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                        </div>
+                        <h3>Educators Portal</h3>
+                        <p>Manage courses & attendance</p>
+                    </Link>
                 </div>
 
                 {/* How It Works Section */}
@@ -102,8 +111,8 @@ const Home = () => {
                                 <div className="step">
                                     <span className="step-number">1</span>
                                     <div className="step-content">
-                                        <strong>Login to Admin</strong>
-                                        <p>Click "Admin Portal" → Register/Login</p>
+                                        <strong>Login to Educators Portal</strong>
+                                        <p>Click "Educators Portal" → Register/Login</p>
                                     </div>
                                 </div>
                                 <div className="step">
